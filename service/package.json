@@ -1,0 +1,11 @@
+{
+  "name": "homenet",
+  "version": "0.0.1",
+  "private": "true",
+  "main": "main.js",
+  "dependencies": {
+    "openzwave": "0.0.32",
+    "winston": "~0.7.3",
+    "enum": "~0.2.6"
+  }
+}
