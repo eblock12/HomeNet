@@ -21,11 +21,12 @@ var ZWaveManager = function(devicePath) {
     this.stop = function() {
         if (zwave) {
             zwave.disconnect();
+            zwave = void 0;
         }
     };
 
     function initializeDriver() {
-        var zwave = new OpenZWave(devicePath, {
+        zwave = new OpenZWave(devicePath, {
             logging: false,
             consoleoutput: false,
             saveconfig: true,
@@ -59,7 +60,10 @@ var ZWaveManager = function(devicePath) {
 
     function onDriverFailed() {
         logger.error("Failed to initialize OpenZWave driver");
-        zwave.disconnect();
+        if (zwave) {
+            zwave.disconnect();
+            zwave = void 0;
+        }
     }
 
     function onNodeAdded(nodeID) {

@@ -1,5 +1,9 @@
 var ZWaveManager = require("./zwave-manager.js");
+var DeviceManager = require("./device-manager.js");
 var logger = require("./log.js");
+
+// initialize the Devices Manager
+var devices = new DeviceManager(); // TODO: Load file name from config
 
 // bring up ZWave Manager
 logger.info("Bringing up ZWave...");
@@ -19,5 +23,7 @@ process.on("SIGINT", function() {
 function shutdown() {
     logger.info("Shutting down...");
     zwave.stop();
-    process.exit();
+    devices.save(function() {
+        process.exit();
+    });
 }
