@@ -94,6 +94,7 @@ var DeviceManager = function(file) {
                 {
                     unpack(JSON.parse(data));
                     logger.log("verbose", "Finished reading devices database from '%s'", file);
+                    dead = false;
                 }
                 catch (jsonError) {
                     logger.error("Failed to load devices file from '%s'", file, jsonError);
@@ -153,7 +154,7 @@ var DeviceManager = function(file) {
     }
 
     function doWriteCheck(callback) {
-        if (isDirty() && !loading && !saving) {
+        if (isDirty() && !loading && !saving && !dead) {
             setClean();
             saveFile(callback);
         }
