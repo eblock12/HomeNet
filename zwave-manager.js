@@ -27,7 +27,7 @@ var ZWaveManager = function(devicePath) {
 
     function initializeDriver() {
         zwave = new OpenZWave(devicePath, {
-            logging: false,
+            logging: true,
             consoleoutput: false,
             saveconfig: true,
             driverattempts: 0,
@@ -147,9 +147,10 @@ var ZWaveManager = function(devicePath) {
 
     function onValueChanged(nodeID, comClass, value) {
         var node = nodes[nodeID];
-        logger.log("verbose", "ZWave Node (ID=%d) changed %s%s:%s->%s",
+        logger.log("verbose", "ZWave Node (ID=%d) changed %s:%s:%s->%s",
             nodeID,
             CommandClass.get(comClass).toString(),
+            value.label,
             node.classes[comClass][value.index].value,
             value.value);
         node.classes[comClass][value.index] = value;
