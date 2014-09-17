@@ -9,7 +9,6 @@ var DeviceManager = function(file) {
     var dead = false;
 
     var saveCheckTime = 1 * 1000 * 60; // 1 minute
-
     var saveTimer = setTimeout(doWriteCheck, saveCheckTime);
 
     if (!file) {
@@ -17,33 +16,39 @@ var DeviceManager = function(file) {
     }
     loadFile(file);
 
-    this.addDevice = function()
+    this.addDevice = function(name, nodeID)
     {
-        if (isLoading) {
-            throw new Error("Can't addDevice() while loading from file");
-        }
-        if (dead) {
-            throw new Error("Can't addDevice() because the device database is unavailable.");
-        }
+        validateWriteState();
 
-        devices.push(new Device());
+        var newDevice = new Device();
+        if (name) {
+            newDevice.setName(name);
+        }
+        if (nodeID) {
+            newDevice.setNodeID(nodeID);
+        };
+        devices.push(newDevice);
         dirty = true;
+        return newDevice;
     };
 
     this.getDevices = function() {
-        if (dead) {
-            throw new Error("Can't getDevices() because the device database is unavailable.");
-        }
+        validateReadState();
         return devices;
-    }
+    };
+
+    this.getDeviceByID = function(id) {
+        validateReadState();
+        for (var i = 0; i < devices.length; i++) {
+            if (devices[i].getID() == id) {
+                return devices[i];
+            }
+        }
+        return void 0;
+    };
 
     this.removeDevice = function(device) {
-        if (isLoading) {
-            throw new Error("Can't removeDevice() while loading from file");
-        }
-        if (dead) {
-            throw new Error("Can't removeDevice() because the device database is unavailable.");
-        }
+        validateWriteState();
 
         var index = devices.indexOf(device);
         if (index !== -1) {
@@ -83,6 +88,7 @@ var DeviceManager = function(file) {
                     logger.info("Device file doesn't exist yet, will create a new one");
                     devices = [];
                     dirty = true;
+                    dead = false;
                 }
                 else {
                     logger.error("Failed to load devices file from '%s'", file, err);
@@ -166,11 +172,27 @@ var DeviceManager = function(file) {
         saveTimer = setTimeout(doWriteCheck, saveCheckTime);
     }
 
+    function validateReadState() {
+        if (dead) {
+            throw new Error("Device database is unavailable.");
+        }
+    }
+
+    function validateWriteState() {
+        validateReadState();
+        if (loading) {
+            throw new Error("Device database is currently loading.");
+        }
+    }
+
     var Device = function() {
         var name = "";
         var nodeID = 0; // ZWave Node
+        var id = newID();
 
         var dirty = false;
+
+        this.getID = function() { return id; };
 
         this.getName = function() { return name; };
         this.setName = function(name) {
@@ -194,16 +216,33 @@ var DeviceManager = function(file) {
 
         this.pack = function() {
             return {
+                ID: this.id,
                 Name: this.name,
                 NodeID: this.nodeID,
             };
         };
 
         this.unpack = function(obj) {
+            if (obj.ID) {
+                this.id = obj.ID;
+            }
+            else {
+                this.id = newID();
+            }
             this.name = obj.Name;
             this.nodeID = obj.NodeID;
             dirty = false;
         };
+
+        function newID() {
+            var id = 0;
+
+            for (var i = 0; i < devices.length; i++) {
+                id = Math.max(devices[i].getID(), id);
+            }
+
+            return (id + 1);
+        }
     };
 }
 
