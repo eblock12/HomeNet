@@ -186,52 +186,52 @@ var DeviceManager = function(file) {
     }
 
     var Device = function() {
-        var name = "";
-        var nodeID = 0; // ZWave Node
-        var id = newID();
+        var _name = "";
+        var _nodeID = 0; // ZWave Node
+        var _id = newID();
 
-        var dirty = false;
+        var _dirty = false;
 
-        this.getID = function() { return id; };
+        this.getID = function() { return _id; };
 
-        this.getName = function() { return name; };
+        this.getName = function() { return _name; };
         this.setName = function(name) {
-            if (this.name !== name) {
-                this.name = name;
-                dirty = true;
+            if (_name !== name) {
+                _name = name;
+                _dirty = true;
             }
         };
 
-        this.getNodeID = function() { return nodeID; };
+        this.getNodeID = function() { return _nodeID; };
         this.setNodeID = function(id) {
-            if (this.nodeID !== id) {
-                this.nodeID = id;
-                dirty = true;
+            if (_nodeID !== id) {
+                _nodeID = id;
+                _dirty = true;
             }
         };
 
-        this.isDirty = function() { return dirty; };
+        this.isDirty = function() { return _dirty; };
 
-        this.setClean = function() { dirty = false; };
+        this.setClean = function() { _dirty = false; };
 
         this.pack = function() {
             return {
-                ID: this.id,
-                Name: this.name,
-                NodeID: this.nodeID,
+                ID: _id,
+                Name: _name,
+                NodeID: _nodeID,
             };
         };
 
         this.unpack = function(obj) {
             if (obj.ID) {
-                this.id = obj.ID;
+                _id = obj.ID;
             }
             else {
-                this.id = newID();
+                _id = newID();
             }
-            this.name = obj.Name;
-            this.nodeID = obj.NodeID;
-            dirty = false;
+            _name = obj.Name;
+            _nodeID = obj.NodeID;
+            _dirty = false;
         };
 
         function newID() {

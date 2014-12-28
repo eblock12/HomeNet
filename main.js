@@ -7,7 +7,7 @@ var server;
 
 registerSignalHandlers();
 initializeDeviceManager();
-//initializeZWaveManager();
+initializeZWaveManager();
 initializeServer();
 
 function initializeDeviceManager() {

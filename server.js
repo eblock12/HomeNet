@@ -38,7 +38,7 @@ var Server = function(port, deviceManager) {
         var id = Number(req.params.id);
         var device = deviceManager.getDeviceByID(id);
         if (device) {
-            res.json(device);
+            res.json(device.pack());
         }
         else {
             res.status(404).send("Device not found");
@@ -46,7 +46,9 @@ var Server = function(port, deviceManager) {
     });
 
     app.get("/api/devices", function(req, res) {
-        var devices = deviceManager.getDevices();
+        var devices = deviceManager.getDevices().map(function(currentValue) {
+            return currentValue.pack();
+        });
         res.json(devices);
     });
 
@@ -55,9 +57,21 @@ var Server = function(port, deviceManager) {
             var device = deviceManager.addDevice(req.body.name, req.body.nodeID)
             res.status(201);
             res.end();
-        } 
+        }
         else {
-            res.status(400).send("Request is bad. Details: " + util.inspect(errors));
+            res.status(400).send("Request is bad");
+        }
+    });
+
+    app.delete("/api/devices/:id", function(req, res) {
+        var id = Number(req.params.id);
+        var device = deviceManager.getDeviceByID(id);
+        if (device) {
+            deviceManager.removeDevice(device);
+            res.status(204).send("Device deleted");
+        }
+        else {
+            res.status(404).send("Device not found");
         }
     });
 
