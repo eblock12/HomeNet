@@ -31,7 +31,66 @@ var Server = function(port, deviceManager) {
     // Implement API routes
     // ***********************
     app.get("/api/test", function(req,res) {
-        res.send("Hello, world!");
+        //res.send("Hello, world!");
+        res.json(deviceManager.getNodesDebug());
+    });
+
+    app.get("/api/devices/:id/values/:name", function(req, res) {
+        var id = Number(req.params.id);
+        var name = req.params.name;
+        var device = deviceManager.getDeviceByID(id);
+        if (device) {
+            var value = device.getValue(name);
+            if (typeof value === "undefined") {
+                res.status(404).send("Value not found");
+            }
+            else {
+                res.json(value);
+            }
+        }
+        else {
+            res.status(404).send("Device not found");
+        }
+    });
+
+    app.post("/api/devices/:id/values/:name", function(req, res) {
+        if (req.body && typeof req.body.value !== "undefined") {
+            var id = Number(req.params.id);
+            var name = req.params.name;
+            var device = deviceManager.getDeviceByID(id);
+            if (device) {
+                var value = device.getValue(name);
+                if (typeof value === "undefined") {
+                    res.status(404).send("Value not found");
+                }
+                else {
+                    if (device.setValue(name, req.body.value)) {
+                        res.status(201);
+                        res.end();
+                    }
+                    else {
+                        res.status(500).send("Failed to update the device value");
+                    }
+                }
+            }
+            else {
+                res.status(404).send("Device not found");
+            }
+        }
+        else {
+            res.status(400).send("Request is bad");
+        }
+    });
+
+    app.get("/api/devices/:id/values", function(req, res) {
+        var id = Number(req.params.id);
+        var device = deviceManager.getDeviceByID(id);
+        if (device) {
+            res.json(device.getValues());
+        }
+        else {
+            res.status(404).send("Device not found");
+        }
     });
 
     app.get("/api/devices/:id", function(req, res) {

@@ -6,13 +6,13 @@ var zwaveManager;
 var server;
 
 registerSignalHandlers();
-initializeDeviceManager();
 initializeZWaveManager();
+initializeDeviceManager();
 initializeServer();
 
 function initializeDeviceManager() {
     var DeviceManager = require("./device-manager.js");
-    deviceManager = new DeviceManager(); // TODO: Load file name from config
+    deviceManager = new DeviceManager("devices.json", zwaveManager); // TODO: Load file name from config
 }
 
 function initializeZWaveManager() {

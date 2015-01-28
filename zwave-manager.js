@@ -10,8 +10,45 @@ var ZWaveManager = function(devicePath) {
     var CommandClass = new Enum(require("./zwave-commandclass.json"));
     var NotificationCode = new Enum(require("./zwave-notificationcode.json"));
 
+    this.getNodes = function() {
+        return nodes;
+    };
+
+    this.getNodeValues = function(nodeID) {
+        var values = void 0;
+
+        var node = nodes[nodeID];
+        if (node) {
+            values = node.values;
+        }
+
+        return values;
+    };
+
     this.isReady = function() {
         return isReady;
+    };
+
+    this.setNodeValue = function(nodeID, name, newValue) {
+        var result = false;
+
+        if (nodes[nodeID]) {
+            var node = nodes[nodeID];
+            for (var comClass in node.classes) {
+                var comValues = node.classes[comClass];
+                for (var valueIndex in comValues) {
+                    var value = comValues[valueIndex];
+                    if (value.label === name) {
+                        console.log("setting value ID=" + nodeID + " class=" + comClass + " index=" + valueIndex + " value=" + newValue);
+                        zwave.setValue(nodeID, comClass, valueIndex, newValue);
+                        node.values[value.label] = newValue;
+                        result = true;
+                    }
+                }
+            }
+        }
+
+        return result;
     };
 
     this.start = function() {
@@ -126,6 +163,7 @@ var ZWaveManager = function(devicePath) {
                 logger.log("verbose", "  %s=%s", value.label, value.value);
             }
         }
+        flattenValues(nodeID);
     }
 
     function onNotification(nodeID, notif) {
@@ -143,6 +181,7 @@ var ZWaveManager = function(devicePath) {
             node.classes[comClass] = {};
         }
         node.classes[comClass][value.index] = value;
+        flattenValues(nodeID);
     }
 
     function onValueChanged(nodeID, comClass, value) {
@@ -154,6 +193,7 @@ var ZWaveManager = function(devicePath) {
             node.classes[comClass][value.index].value,
             value.value);
         node.classes[comClass][value.index] = value;
+        flattenValues(nodeID);
     }
 
     function onValueRemoved(nodeID, comClass, index) {
@@ -161,6 +201,21 @@ var ZWaveManager = function(devicePath) {
         if (node.classes[comClass] && node.classes[comClass][index]) {
             delete node.classes[comClass][index];
         }
+        flattenValues(nodeID);
+    }
+
+    function flattenValues(nodeID) {
+        var values = {};
+        var node = nodes[nodeID];
+
+        for (var comClass in node.classes) {
+            var comValues = node.classes[comClass];
+            for (var valueIndex in comValues) {
+                var value = comValues[valueIndex];
+                values[value.label] = value.value;
+            }
+        }
+        node.values = values;
     }
 };
 

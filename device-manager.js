@@ -1,7 +1,10 @@
+var Enum = require("enum");
 var fs = require("fs");
 var logger = require("winston");
 
-var DeviceManager = function(file) {
+var CommandClass = new Enum(require("./zwave-commandclass.json"));
+
+var DeviceManager = function(file, zwave) {
     var devices = [];
     var dirty = false;
     var loading = false;
@@ -45,6 +48,10 @@ var DeviceManager = function(file) {
             }
         }
         return void 0;
+    };
+
+    this.getNodesDebug = function() {
+        return zwave.getNodes();
     };
 
     this.removeDevice = function(device) {
@@ -193,6 +200,19 @@ var DeviceManager = function(file) {
         var _dirty = false;
 
         this.getID = function() { return _id; };
+
+        this.getValue = function(name) {
+            var values = zwave.getNodeValues(this.getNodeID());
+            return values[name];
+        };
+
+        this.setValue = function(name, value) {
+            return zwave.setNodeValue(this.getNodeID(), name, value);
+        };
+
+        this.getValues = function() {
+            return zwave.getNodeValues(this.getNodeID());
+        };
 
         this.getName = function() { return _name; };
         this.setName = function(name) {
